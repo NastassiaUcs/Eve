@@ -2,5 +2,6 @@
 {
     public class ChatActivity
     {
+        public User user;
     }
 }

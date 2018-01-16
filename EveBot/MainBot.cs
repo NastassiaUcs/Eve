@@ -79,26 +79,24 @@ namespace EveBot
         async void ProcessCallback(object sc, CallbackQueryEventArgs ev)
         {
             var message = ev.CallbackQuery.Message;
-            long chatId = message.Chat.Id;
-            string callbackQueryData = ev.CallbackQuery.Data;
+            message.From = ev.CallbackQuery.From;
+            message.Text = ev.CallbackQuery.Data;
+
+            long chatId = message.Chat.Id;            
 
             try
             {
-                try
-                {
-                    await Bot.EditMessageTextAsync(chatId, message.MessageId, message.Text,
-                        parseMode: ParseMode.Html, replyMarkup: null);
-                }
-                catch (ApiRequestException ewq)
-                {
-                    Logger.Warn(ewq.Message);
-                    await Bot.EditMessageTextAsync(chatId, message.MessageId, message.Text,
-                        parseMode: ParseMode.Default, replyMarkup: null);
-                }
+                await EditMessage(chatId, message.MessageId, message.Text);             
             }
             catch (ApiRequestException ert)
             {
                 Logger.Warn("Ошибка при редактировании кнопок:" + ert.Message);
+            }
+
+            if (message != null)
+            {
+                dataBase.SaveINMessage(message);
+                await ChoiceActivity(message);
             }
         }
 
@@ -128,6 +126,29 @@ namespace EveBot
             }
         }        
 
+        public async Task EditMessage(long chatId, int messageId, string text)
+        {
+            try
+            {
+                await Bot.EditMessageTextAsync(chatId, messageId, text,
+                    parseMode: ParseMode.Html, replyMarkup: null);
+            }
+            catch (ApiRequestException ewq)
+            {
+                Logger.Warn(ewq.Message);
+                text = DelTags(text);
+                await Bot.EditMessageTextAsync(chatId, messageId, text,
+                    parseMode: ParseMode.Default, replyMarkup: null);
+            }          
+        }
+
+        private string DelTags(string text)
+        {
+            text = text.Replace("<b>", "");
+            text = text.Replace("</b>", "");
+            return text;
+        }
+
         public async Task<Message> SendMessage(long chatID, string textMsg,
             ReplyMarkup replyMarkup = null, InlineKeyboardMarkup inlineKeyboard = null)
         {
@@ -144,8 +165,8 @@ namespace EveBot
             {
                 if (e.ErrorCode == TELEGRAM_ERROR_CODE_BAD_REQUEST)
                 {
-                    textMsg = textMsg.Replace("<b>", "");
-                    textMsg = textMsg.Replace("</b>", "");
+                    textMsg = DelTags(textMsg);
+
                     if (inlineKeyboard == null)
                         mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Default,
                             replyMarkup: replyMarkup);
