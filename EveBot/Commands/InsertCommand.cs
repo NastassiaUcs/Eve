@@ -5,7 +5,7 @@ namespace EveBot
 {
     public class InsertCommand : BaseCommand
     {
-        public async Task<string> TestMsg(Message message)
+        public override async Task<string> TestMsg(Message message)
         {
             return "ага в инсерт";
         }

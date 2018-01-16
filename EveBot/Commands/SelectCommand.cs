@@ -5,7 +5,7 @@ namespace EveBot
 {
     public class SelectCommand: BaseCommand
     {
-        public async Task<string> TestMsg(Message message)
+        public override async Task<string> TestMsg(Message message)
         {
             return "ага в select";
         }
