@@ -3,11 +3,11 @@ using Telegram.Bot.Types;
 
 namespace EveBot
 {
-    public class InsertCommand : BaseCommand
+    public class SelectCommand: BaseCommand
     {
         public async Task<string> TestMsg(Message message)
         {
-            return "ага в инсерт";
+            return "ага в select";
         }
     }
 }

@@ -22,6 +22,8 @@
             "на основании которых я и сделаю вывод...";
 
         public const string COMMAND_START = "/start";
+        public const string COMMAND_INSERT = "/insert";
+        public const string COMMAND_SELECT = "/select";
 
         public static string[] TAGS = new string[] { "<b>", "</b>" };
 

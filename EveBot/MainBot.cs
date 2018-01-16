@@ -11,7 +11,7 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace EveBot
 {
-    class MainBot
+    public class MainBot
     {
         private BackgroundWorker BW;
         private ConfigJson config;        
@@ -109,9 +109,19 @@ namespace EveBot
                 await FirstStart(message);
                 return;
             }
-            else if (textMessage == "что-то другое, вынесем в константы")
+            else 
             {
-                //что-то делаем
+                ChatActivity chatActivity = (ChatActivity)EveAction[message.Chat.Id];
+                if (chatActivity != null)
+                    if (chatActivity.command == null)
+                    {
+                        chatActivity.command = BaseCommand.Test(textMessage);
+                    }
+                    else
+                    {
+                        string text = await chatActivity.command.TestMsg(message);
+                        await SendMessage(message.Chat.Id, text);
+                    }
             }
         }
 
