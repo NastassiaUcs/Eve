@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -17,11 +18,14 @@ namespace EveBot
         private TelegramBotClient Bot;
         private DataBase dataBase;
 
+        private Hashtable EveAction;
+
         public const int TELEGRAM_ERROR_CODE_BAD_REQUEST = 400;
         public const int TELEGRAM_ERROR_CODE_BLOCKED = 403;
 
         public MainBot()
         {
+            EveAction = new Hashtable();
             config = new ConfigJson();
             dataBase = new DataBase(config);
             BW = new BackgroundWorker();
@@ -68,15 +72,8 @@ namespace EveBot
             if (message != null)
             {
                 dataBase.SaveINMessage(message);
-            }
-
-            string textMessage = message.Text;
-
-            if (textMessage == "/start")
-            {
-                await FirstStart(message);
-                return;
-            }
+                await ChoiceActivity(message);
+            }            
         }
 
         async void ProcessCallback(object sc, CallbackQueryEventArgs ev)
@@ -105,9 +102,30 @@ namespace EveBot
             }
         }
 
+        private async Task ChoiceActivity(Message message)
+        {
+            string textMessage = message.Text;
+
+            if (textMessage == "/start")
+            {
+                await FirstStart(message);
+                return;
+            }
+            else if (textMessage == "что-то другое, вынесем в константы")
+            {
+                //что-то делаем
+            }
+        }
+
         private async Task FirstStart(Message message)
-        {   
-            await SendMessage(message.Chat.Id, Texts.MSG_START);
+        {
+            var chatId = message.Chat.Id;
+
+            await SendMessage(chatId, Texts.MSG_START);
+            if (!EveAction.Contains(chatId))
+            {
+                EveAction.Add(chatId, new ChatActivity());
+            }
         }        
 
         public async Task<Message> SendMessage(long chatID, string textMsg,
