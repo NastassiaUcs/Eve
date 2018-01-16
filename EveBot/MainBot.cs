@@ -1,9 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace EveBot
 {
@@ -12,6 +15,9 @@ namespace EveBot
         private BackgroundWorker BW;
         private ConfigJson config;        
         private TelegramBotClient Bot;
+
+        public const int TELEGRAM_ERROR_CODE_BAD_REQUEST = 400;
+        public const int TELEGRAM_ERROR_CODE_BLOCKED = 403;
 
         public MainBot()
         {
@@ -55,9 +61,21 @@ namespace EveBot
             if (evu.Update.CallbackQuery != null || evu.Update.InlineQuery != null)
                 return;
 
-            var message = evu.Update.Message;
+            Message message = evu.Update.Message;
+            string textMessage = message.Text;
 
-            await Bot.SendTextMessageAsync(message.Chat.Id, "aga");
+            if (textMessage == "/start")
+            {
+                await FirstStart(message);
+                return;
+            }
+
+            //await Bot.SendTextMessageAsync(message.Chat.Id, "aga");
+
+            // сохраняем сообщение входящие в базу, серилизация
+            // сохраняем исходящие сообщения в базу, серилизация
+            
+            
         }
 
         async void ProcessCallback(object sc, CallbackQueryEventArgs ev)
@@ -84,6 +102,45 @@ namespace EveBot
             {
                 Logger.Warn("Ошибка при редактировании кнопок:" + ert.Message);
             }
+        }
+
+        private async Task FirstStart(Message message)
+        {   
+            await SendMessage(message.Chat.Id, Texts.MSG_START);
+        }        
+
+        public async Task<Message> SendMessage(long chatID, string textMsg,
+            ReplyMarkup replyMarkup = null, InlineKeyboardMarkup inlineKeyboard = null)
+        {
+            Message mmsg = null;
+
+            try
+            {
+                if (inlineKeyboard == null)
+                    mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Html, replyMarkup: replyMarkup);
+                else
+                    mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Html, replyMarkup: inlineKeyboard);
+            }
+            catch (ApiRequestException e)
+            {
+                if (e.ErrorCode == TELEGRAM_ERROR_CODE_BAD_REQUEST)
+                {
+                    textMsg = textMsg.Replace("<b>", "");
+                    textMsg = textMsg.Replace("</b>", "");
+                    if (inlineKeyboard == null)
+                        mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Default,
+                            replyMarkup: replyMarkup);
+                    else
+                        mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Default,
+                            replyMarkup: inlineKeyboard);
+                }
+                else if (e.ErrorCode == TELEGRAM_ERROR_CODE_BLOCKED)
+                {
+                    Logger.Warn("чат " + chatID.ToString() + ": " + e.Message);                                      
+                    //todo: update status in database
+                }
+            }
+            return mmsg;
         }
     }
 }
