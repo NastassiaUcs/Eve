@@ -1,8 +1,10 @@
 ﻿using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Text;
 using System.Threading;
+using Telegram.Bot.Types;
 
 namespace EveBot
 {
@@ -82,6 +84,35 @@ namespace EveBot
             }
             _semaphoreSlim.Release();
             return result;
+        }
+
+        public void SaveOutMessage(Message message)
+        {
+            Logger.Info("insert OUT message in base");           
+            
+            Query("insert into out_messages (message) select @message;", 
+                new Hashtable
+                {
+                    { "@message", GetJsonMessage(message) }
+                }, 
+                null);
+        }
+
+        public void SaveINMessage(Message message)
+        {
+            Logger.Info("insert IN message in base");
+
+            Query("insert into in_messages (message) select @message;",
+                new Hashtable
+                {
+                    { "@message", GetJsonMessage(message) }
+                },
+                null);
+        }
+
+        public static string GetJsonMessage(Message message)
+        {
+            return JsonConvert.SerializeObject(message);
         }
     }
 }

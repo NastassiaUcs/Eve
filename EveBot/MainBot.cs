@@ -15,6 +15,7 @@ namespace EveBot
         private BackgroundWorker BW;
         private ConfigJson config;        
         private TelegramBotClient Bot;
+        private DataBase dataBase;
 
         public const int TELEGRAM_ERROR_CODE_BAD_REQUEST = 400;
         public const int TELEGRAM_ERROR_CODE_BLOCKED = 403;
@@ -22,6 +23,7 @@ namespace EveBot
         public MainBot()
         {
             config = new ConfigJson();
+            dataBase = new DataBase(config);
             BW = new BackgroundWorker();
         }
 
@@ -62,6 +64,12 @@ namespace EveBot
                 return;
 
             Message message = evu.Update.Message;
+
+            if (message != null)
+            {
+                dataBase.SaveINMessage(message);
+            }
+
             string textMessage = message.Text;
 
             if (textMessage == "/start")
@@ -69,13 +77,6 @@ namespace EveBot
                 await FirstStart(message);
                 return;
             }
-
-            //await Bot.SendTextMessageAsync(message.Chat.Id, "aga");
-
-            // сохраняем сообщение входящие в базу, серилизация
-            // сохраняем исходящие сообщения в базу, серилизация
-            
-            
         }
 
         async void ProcessCallback(object sc, CallbackQueryEventArgs ev)
@@ -140,6 +141,12 @@ namespace EveBot
                     //todo: update status in database
                 }
             }
+
+            if (mmsg != null)
+            {
+                dataBase.SaveOutMessage(mmsg);
+            }
+
             return mmsg;
         }
     }
