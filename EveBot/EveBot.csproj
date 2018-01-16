@@ -48,6 +48,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigJson.cs" />
+    <Compile Include="DataBase.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="MainBot.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

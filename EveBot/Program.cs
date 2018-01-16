@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EveBot
 {
@@ -10,6 +6,15 @@ namespace EveBot
     {
         static void Main(string[] args)
         {
+            MainBot mainBot = new MainBot();
+            mainBot.StartBot();
+
+            string exit = Console.ReadLine();
+            if (exit == "exit")
+            {
+                mainBot.EndBot();
+                Environment.Exit(0);
+            }
         }
     }
 }
