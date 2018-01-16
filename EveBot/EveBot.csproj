@@ -60,9 +60,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\BaseCommand.cs" />
     <Compile Include="ChatActivity.cs" />
     <Compile Include="ConfigJson.cs" />
     <Compile Include="DataBase.cs" />
+    <Compile Include="Commands\InsertCommand.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="MainBot.cs" />
     <Compile Include="Program.cs" />

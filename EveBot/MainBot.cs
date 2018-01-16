@@ -90,7 +90,7 @@ namespace EveBot
             }
             catch (ApiRequestException ert)
             {
-                Logger.Warn("Ошибка при редактировании кнопок:" + ert.Message);
+                Logger.Warn("Ошибка при редактировании кнопок: " + ert.Message);
             }
 
             if (message != null)
@@ -104,7 +104,7 @@ namespace EveBot
         {
             string textMessage = message.Text;
 
-            if (textMessage == "/start")
+            if (textMessage == Texts.COMMAND_START)
             {
                 await FirstStart(message);
                 return;
@@ -136,18 +136,11 @@ namespace EveBot
             catch (ApiRequestException ewq)
             {
                 Logger.Warn(ewq.Message);
-                text = DelTags(text);
+                text = Texts.DelTags(text);
                 await Bot.EditMessageTextAsync(chatId, messageId, text,
                     parseMode: ParseMode.Default, replyMarkup: null);
             }          
-        }
-
-        private string DelTags(string text)
-        {
-            text = text.Replace("<b>", "");
-            text = text.Replace("</b>", "");
-            return text;
-        }
+        }        
 
         public async Task<Message> SendMessage(long chatID, string textMsg,
             ReplyMarkup replyMarkup = null, InlineKeyboardMarkup inlineKeyboard = null)
@@ -165,7 +158,7 @@ namespace EveBot
             {
                 if (e.ErrorCode == TELEGRAM_ERROR_CODE_BAD_REQUEST)
                 {
-                    textMsg = DelTags(textMsg);
+                    textMsg = Texts.DelTags(textMsg);
 
                     if (inlineKeyboard == null)
                         mmsg = await Bot.SendTextMessageAsync(chatID, textMsg, parseMode: ParseMode.Default,

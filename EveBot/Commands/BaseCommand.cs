@@ -1,0 +1,7 @@
+﻿namespace EveBot
+{
+    class BaseCommand
+    {
+
+    }
+}
