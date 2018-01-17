@@ -92,7 +92,7 @@ namespace EveBot
                 }
             };
 
-            await Bot.AnswerInlineQueryAsync(ei.InlineQuery.Id, results);
+            await AnswerInline(ei.InlineQuery.Id, results);
         }
 
         async void GettingUpdates(object su, UpdateEventArgs evu)
@@ -178,6 +178,18 @@ namespace EveBot
             }
         }        
 
+        public async Task AnswerInline(string InlineQueryId, InlineQueryResult[] results)
+        {
+            try
+            {
+                await Bot.AnswerInlineQueryAsync(InlineQueryId, results);
+            }
+            catch (ApiRequestException e)
+            {
+                Logger.Error("ошибка при отправке ответа на инлайн-запрос: " + e.Message);
+            }
+        }
+
         public async Task EditMessage(long chatId, int messageId, string text)
         {
             try
@@ -221,7 +233,7 @@ namespace EveBot
                 }
                 else if (e.ErrorCode == TELEGRAM_ERROR_CODE_BLOCKED)
                 {
-                    Logger.Warn("чат " + chatID.ToString() + ": " + e.Message);                                      
+                    Logger.Warn("чат " + chatID + ": " + e.Message);                                      
                     //todo: update status in database
                 }
             }
