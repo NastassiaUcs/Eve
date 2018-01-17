@@ -68,31 +68,14 @@ namespace EveBot
         async void ProcessInline(object si, InlineQueryEventArgs ei)
         {
             var query = ei.InlineQuery.Query;
+            User user = User.CreateNewUserFrom(ei.InlineQuery.From);
+            Logger.Info("инлайн от " + user.NameWithTelegramId + ": " + query);
+            var results = await CreateAnswerInline(query);
 
-            InlineQueryResult[] results = {
-                new InlineQueryResultArticle
-                {
-                    Id = "1",
-                    Title = "Eve:",
-                    Description = "Сейчас ответ на любой запрос - ага",
-                    InputMessageContent = new InputTextMessageContent
-                    {
-                        DisableWebPagePreview = true,
-                        MessageText = "ага",
-                        ParseMode = ParseMode.Default,
-                    }
-                },
-                new InlineQueryResultPhoto
-                {
-                    Id = "2",
-                    Url = "https://guitarcity.by/image/data/logo_bf.png",
-                    ThumbUrl = "https://guitarcity.by/image/data/logo_bf.png",
-                    Caption = "Текст под фоткой",
-                    Description = "Описание",
-                }
-            };
-
-            await AnswerInline(ei.InlineQuery.Id, results);
+            if (results != null)
+            {
+                await SendAnswerInline(ei.InlineQuery.Id, results);
+            }
         }
 
         async void GettingUpdates(object su, UpdateEventArgs evu)
@@ -100,7 +83,7 @@ namespace EveBot
             if (evu.Update.CallbackQuery != null || evu.Update.InlineQuery != null)
                 return;
 
-            Message message = evu.Update.Message;
+            Message message = evu.Update.Message;            
 
             if (message != null)
             {
@@ -176,9 +159,43 @@ namespace EveBot
             {
                 // селект последнюю активность из базы тогда
             }
-        }        
+        }
 
-        public async Task AnswerInline(string InlineQueryId, InlineQueryResult[] results)
+        public async Task<InlineQueryResult[]> CreateAnswerInline(string query)
+        {
+            InlineQueryResult[] results = null;
+
+            if (!String.IsNullOrEmpty(query))
+            {
+                results = new InlineQueryResult[]
+                {
+                    new InlineQueryResultArticle
+                    {
+                        Id = "1",
+                        Title = "Eve:",
+                        Description = "Сейчас ответ на любой запрос - ага",
+                        InputMessageContent = new InputTextMessageContent
+                        {
+                            // если true, то окно с результатом появляется сразу, false - только после ввода запроса
+                            //DisableWebPagePreview = true,
+                            MessageText = "ага",
+                            ParseMode = ParseMode.Default,
+                        }
+                    },
+                    new InlineQueryResultPhoto
+                    {
+                        Id = "2",
+                        Url = "https://guitarcity.by/image/data/logo_bf.png",
+                        ThumbUrl = "https://guitarcity.by/image/data/logo_bf.png",
+                        Caption = "Текст под фоткой",
+                        Description = "Описание",
+                    }
+                };
+            }
+            return results;
+        }
+
+        public async Task SendAnswerInline(string InlineQueryId, InlineQueryResult[] results)
         {
             try
             {
