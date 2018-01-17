@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -7,6 +7,8 @@ using Telegram.Bot.Args;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.InputMessageContents;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace EveBot
@@ -18,14 +20,14 @@ namespace EveBot
         private TelegramBotClient Bot;
         private DataBase dataBase;
 
-        private Hashtable EveAction;
+        private Dictionary<long, ChatActivity> EveAction;
 
         public const int TELEGRAM_ERROR_CODE_BAD_REQUEST = 400;
         public const int TELEGRAM_ERROR_CODE_BLOCKED = 403;
 
         public MainBot()
         {
-            EveAction = new Hashtable();
+            EveAction = new Dictionary<long, ChatActivity>();
             config = new ConfigJson();
             dataBase = new DataBase(config);
             BW = new BackgroundWorker();
@@ -52,14 +54,45 @@ namespace EveBot
 
         async void BWBot(object sender, DoWorkEventArgs e)
         {
-            var worker = sender as BackgroundWorker;            
+            var worker = sender as BackgroundWorker;
 
             await Bot.SetWebhookAsync("");
 
             Bot.OnUpdate += GettingUpdates;
             Bot.OnCallbackQuery += ProcessCallback;
+            Bot.OnInlineQuery += ProcessInline;
 
             Bot.StartReceiving();
+        }
+
+        async void ProcessInline(object si, InlineQueryEventArgs ei)
+        {
+            var query = ei.InlineQuery.Query;
+
+            InlineQueryResult[] results = {
+                new InlineQueryResultArticle
+                {
+                    Id = "1",
+                    Title = "Eve:",
+                    Description = "Сейчас ответ на любой запрос - ага",
+                    InputMessageContent = new InputTextMessageContent
+                    {
+                        DisableWebPagePreview = true,
+                        MessageText = "ага",
+                        ParseMode = ParseMode.Default,
+                    }
+                },
+                new InlineQueryResultPhoto
+                {
+                    Id = "2",
+                    Url = "https://guitarcity.by/image/data/logo_bf.png",
+                    ThumbUrl = "https://guitarcity.by/image/data/logo_bf.png",
+                    Caption = "Текст под фоткой",
+                    Description = "Описание",
+                }
+            };
+
+            await Bot.AnswerInlineQueryAsync(ei.InlineQuery.Id, results);
         }
 
         async void GettingUpdates(object su, UpdateEventArgs evu)
@@ -109,9 +142,13 @@ namespace EveBot
                 await FirstStart(message);
                 return;
             }
+            else if (textMessage == Texts.COMMAND_CANCEL)
+            {
+                // почистить не пустые объекты типа, удалить активность
+            }
             else 
             {
-                ChatActivity chatActivity = (ChatActivity)EveAction[message.Chat.Id];
+                ChatActivity chatActivity = EveAction[message.Chat.Id];
                 if (chatActivity != null)
                     if (chatActivity.command == null)
                     {
@@ -130,9 +167,14 @@ namespace EveBot
             var chatId = message.Chat.Id;
 
             await SendMessage(chatId, Texts.MSG_START);
-            if (!EveAction.Contains(chatId))
+            if (!EveAction.ContainsKey(chatId))
             {
                 EveAction.Add(chatId, new ChatActivity());
+                // если юзер есть в базе, то селект, иначе вставить юзера
+            }
+            else
+            {
+                // селект последнюю активность из базы тогда
             }
         }        
 

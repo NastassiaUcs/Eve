@@ -17,13 +17,13 @@ namespace EveBot
 
         public DataBase(ConfigJson config)
         {
+            this.config = config;
             connection = new MySqlConnection(
                 string.Format(
                     "Database={0};Data Source={1};User Id={2};Password={3}",
                     config.DbName, config.DataSource, config.DbUser, config.DbPass
                 )
-            );
-            this.config = config;
+            );            
             _semaphoreSlim = new SemaphoreSlim(1);
         }
 
